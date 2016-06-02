@@ -41,13 +41,15 @@ if (window.DeviceMotionEvent === undefined){
 var connection = 0;
 
 $("#connectButton").click(function(){
-  
-  phone = new WebSocket("ws://" + $("#wsURL").val());
+  var wsURL = $("#wsURL").val();
+  console.log(wsURL);
+  phone = new WebSocket("ws://" + wsURL);
   
   $("#connectButton").attr("disable");
   
   
   phone.onopen = function (event) {
+    console.log("Open");
     phone.send("phone");
     $("#webstat").text("Communicating")
     
@@ -55,6 +57,8 @@ $("#connectButton").click(function(){
     
   };
   phone.onmessage = function (event) {
+    
+    console.log(event.data);
     if(connection == 0 && event.data == "What is your ID?"){
       $("#webstat").text("Waiting for registration");
       $("#registration").removeClass("hide");
@@ -66,6 +70,7 @@ $("#connectButton").click(function(){
       connection = 2;
     }
   phone.onerror = function (){
+    console.log("Error");
     $("#connectButton").removeProp("disable");
     $("#webstat").text("Could not connect");
   
