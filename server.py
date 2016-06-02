@@ -45,6 +45,7 @@ async def phone(websocket, path):
       print("Set data")
     except websockets.exceptions.ConnectionClosed:
       print("Endpoint closed: ", ep)
+      break
       
     
     

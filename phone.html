@@ -18,6 +18,10 @@ X: <span id="accelerationX"></span><br />
 Y: <span id="accelerationY"></span><br />
 Z: <span id="accelerationZ"></span><br />
 
+
+<div id="connection">
+Websocket URL: <input id="wsURL" placeholder="localhost:8765"/><button id="connectButton">Connect</button>
+</div>
 <div id="registration" class="hide">
 Device ID: <input id="device" type="number" min="0" /><button id="registerButton">Register</button>
 </div>
@@ -30,16 +34,24 @@ Websockets status: <span id="webstat">Not connected</span>
 
 <script>
 if (window.DeviceMotionEvent === undefined){
-  //$("body").text("Cannot read the accelerometer")
+  $("body").text("Cannot read the accelerometer")
 }
 
 var connection = 0;
 
-
-  var phone = new WebSocket("ws://localhost:8765");
+$("#connectButton").click(function(){
+  
+  phone = new WebSocket("ws://" + $("#wsURL").val());
+  
+  $("#connectButton").attr("disable");
+  
+  
   phone.onopen = function (event) {
     phone.send("phone");
-    $("#webstat").text("Connecting")
+    $("#webstat").text("Communicating")
+    
+    $("#connection").addClass("hide");
+    
   };
   phone.onmessage = function (event) {
     if(connection == 0 && event.data == "What is your ID?"){
@@ -52,10 +64,15 @@ var connection = 0;
       $("#capture").removeClass("hide");
       connection = 2;
     }
-    
+  phone.onerror = function (){
+    $("#connectButton").removeProp("disable");
+    $("#webstat").text("Could not connect");
+  
+  } 
     
     console.log(event.data);
   };
+});
   
 var data = [];
 var capturing = false;
@@ -79,9 +96,9 @@ $("#captureButton").on("click", function(){
 
 function handleMotion(e) {
       console.log("got movement");
-      var ax = e.clientX;//accelerationIncludingGravity.x;
-      var ay = e.clientY;//accelerationIncludingGravity.y;
-      var az = 0;//event.accelerationIncludingGravity.z;
+      var ax = e.accelerationIncludingGravity.x;
+      var ay = e.accelerationIncludingGravity.y;
+      var az = e.accelerationIncludingGravity.z;
       document.getElementById("accelerationX").innerHTML = ax;
       document.getElementById("accelerationY").innerHTML = ay;
       document.getElementById("accelerationZ").innerHTML = az;
@@ -94,8 +111,8 @@ function handleMotion(e) {
 
 function startMeasurement(){
   //if (window.DeviceMotionEvent != undefined) {
-    //window.ondevicemotion = handleMotion;
-    window.onmousemove = handleMotion;
+    window.ondevicemotion = handleMotion;
+    //window.onmousemove = handleMotion;
 
     timerVar = setInterval( function() {
       phone.send(JSON.stringify(data));
