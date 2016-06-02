@@ -10,7 +10,6 @@
   display: none;
 }        
 </style>
-<script src="http://jsconsole.com/js/remote.js?268690b6-160e-4901-a57d-4820ee606044"></script>
 </head>
 
 <body>
@@ -43,9 +42,11 @@ var connection = 0;
 $("#connectButton").click(function(){
   var wsURL = $("#wsURL").val();
   console.log(wsURL);
-  phone = new WebSocket("ws://" + wsURL);
   
-  $("#connectButton").attr("disable");
+  $("#webstat").text("Connecting")
+  
+  $("#connectButton").attr("disabled", "true");
+  phone = new WebSocket("ws://" + wsURL);
   
   
   phone.onopen = function (event) {
@@ -69,14 +70,16 @@ $("#connectButton").click(function(){
       $("#capture").removeClass("hide");
       connection = 2;
     }
+  };
   phone.onerror = function (){
     console.log("Error");
-    $("#connectButton").removeProp("disable");
+    $("#connectButton").removeAttr("disabled");
     $("#webstat").text("Could not connect");
   
   } 
-    
-    console.log(event.data);
+  phone.onclose = function(evt) {
+    console.log("Closed");
+    //$("#webstat").text("Closed");
   };
 });
   
