@@ -27,6 +27,7 @@ Device ID: <input id="device" type="number" min="0" /><button id="registerButton
 </div>
 <div id="capture" class="hide">
 <button id="captureButton">Start</button>
+<button id="gravityButton">Gravity: ON</button>
 </div>
 <br />
 
@@ -86,6 +87,7 @@ $("#connectButton").click(function(){
 var data = [];
 var capturing = false;
 var timerVar;
+var grav = true;
 
 $("#registerButton").on("click", function(){
   phone.send($("#device").val());
@@ -103,11 +105,25 @@ $("#captureButton").on("click", function(){
   else stopMeasurement();
 })
 
+$("#gravityButton").on("click", function(){
+  var label = grav?"OFF":"ON";
+  grav = !grav;
+  $("#gravityButton").text(label);
+})
+
+
 function handleMotion(e) {
       console.log("got movement");
-      var ax = e.rotationRate.alpha;//accelerationIncludingGravity.x;
-      var ay = e.rotationRate.beta;
-      var az = e.rotationRate.gamma;
+      if(grav){
+        var ax = e.accelerationIncludingGravity.x;
+        var ay = e.accelerationIncludingGravity.y;
+        var az = e.accelerationIncludingGravity.z;
+      }
+      else{
+        var ax = e.acceleration.x;
+        var ay = e.acceleration.y;
+        var az = e.acceleration.z;
+      }
       document.getElementById("accelerationX").innerHTML = ax;
       document.getElementById("accelerationY").innerHTML = ay;
       document.getElementById("accelerationZ").innerHTML = az;
