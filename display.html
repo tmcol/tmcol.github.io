@@ -1,0 +1,114 @@
+<html>
+<head>
+
+<script
+			  src="https://code.jquery.com/jquery-2.2.4.min.js"
+			  integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+			  crossorigin="anonymous"></script>
+        
+        
+
+<link rel="stylesheet" href="graph.css">
+<script src="https://d3js.org/d3.v3.min.js"></script>
+
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="graph.js"></script>
+
+
+
+<style>
+.hide{
+  display: none;
+}        
+
+
+.graphSvg {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+
+</style>
+</head>
+
+<body>
+
+<span id="d"></span>
+
+<div id="graphBoxX"></div>
+
+
+Monitor Device ID: <input id="device" type="number" min="0" />
+<button id="start">Start</button>
+<br />
+Websockets status: <span id="webstat">Not connected</span>
+
+<script>
+var connection = 0;
+var dataIdx = 0;
+
+var xPlot;
+
+var collected = [];
+
+var disp = new WebSocket("ws://localhost:8765");
+disp.onopen = function (event) {
+  disp.send("display"); 
+};
+disp.onmessage = function (event) {
+  
+  console.log(connection, event.data);
+  if(connection ==0 && event.data == "Ready to send"){
+    $("#webstat").text("Ready");
+    connection = 1;
+    $("#start").removeClass("hide");
+  }
+  else if(connection == 1){
+    connection = 2;
+  }
+  else if(connection == 2){
+    var d = JSON.parse(event.data);
+    dataIdx += d.length;
+    collected = collected.concat(d);
+    $("#d").text(collected[0][0] + " " + collected[0][1]);
+    
+    var l = genLine(collected);
+    console.log(l);
+    xPlot.replot(l);
+  }
+};
+  
+$("#start").click(function(){
+  setInterval(function(){
+    var device = $("#device").val();
+    disp.send(device + "," + dataIdx);
+    console.log(device + "," + dataIdx);
+    
+    
+  
+  }, 1000);
+
+});
+
+xPlot = new plotGraph("graphBoxX", 1, "X", "mss", function(a){return a});  
+  
+</script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<html>
+<head>
+<script
+			  src="https://code.jquery.com/jquery-2.2.4.min.js"
+			  integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+			  crossorigin="anonymous"></script>
+        
+<style>
+.hide{
+  display: none;
+}        
+</style>
+</head>
+
+<body>
+
+X: <span id="accelerationX"></span><br />
+Y: <span id="accelerationY"></span><br />
+Z: <span id="accelerationZ"></span><br />
+
+<div id="registration" class="hide">
+Device ID: <input id="device" type="number" min="0" /><button id="registerButton">Register</button>
+</div>
+<div id="capture" class="hide">
+<button id="captureButton">Start</button>
+</div>
+<br />
+
+Websockets status: <span id="webstat">Not connected</span>
+
+<script>
+if (window.DeviceMotionEvent === undefined){
+  //$("body").text("Cannot read the accelerometer")
+}
+
+var connection = 0;
+
+
+  var phone = new WebSocket("ws://localhost:8765");
+  phone.onopen = function (event) {
+    phone.send("phone");
+    $("#webstat").text("Connecting")
+  };
+  phone.onmessage = function (event) {
+    if(connection == 0 && event.data == "What is your ID?"){
+      $("#webstat").text("Waiting for registration");
+      $("#registration").removeClass("hide");
+      connection = 1;
+    }
+    else if(connection == 1 && event.data == "Registered"){
+      $("#webstat").text("Ready");
+      $("#capture").removeClass("hide");
+      connection = 2;
+    }
+    
+    
+    console.log(event.data);
+  };
+  
+var data = [];
+var capturing = false;
+var timerVar;
+
+$("#registerButton").on("click", function(){
+  phone.send($("#device").val());
+  $("#webstat").text("Sending device ID")
+  $("#registration").addClass("hide");
+})
+$("#captureButton").on("click", function(){
+  var label = capturing?"Stop":"Start";
+  capturing = !capturing;
+  $("#captureButton").text(label);
+  
+  if (capturing){
+    startMeasurement();
+  }
+  else stopMeasurement();
+})
+
+function handleMotion(e) {
+      console.log("got movement");
+      var ax = e.clientX;//accelerationIncludingGravity.x;
+      var ay = e.clientY;//accelerationIncludingGravity.y;
+      var az = 0;//event.accelerationIncludingGravity.z;
+      document.getElementById("accelerationX").innerHTML = ax;
+      document.getElementById("accelerationY").innerHTML = ay;
+      document.getElementById("accelerationZ").innerHTML = az;
+      
+      var now = Date.now();
+      
+      data.push([now, ax, ay, az]);
+
+    }
+
+function startMeasurement(){
+  //if (window.DeviceMotionEvent != undefined) {
+    //window.ondevicemotion = handleMotion;
+    window.onmousemove = handleMotion;
+
+    timerVar = setInterval( function() {
+      phone.send(JSON.stringify(data));
+      data = [];
+      
+    }, 1000);
+  //} 
+}
+
+function stopMeasurement(){
+    window.ondevicemotion = null;
+    clearInterval(timerVar);
+}
+  
+</script>
+</body>
+</html>
