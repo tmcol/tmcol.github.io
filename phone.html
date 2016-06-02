@@ -105,9 +105,9 @@ $("#captureButton").on("click", function(){
 
 function handleMotion(e) {
       console.log("got movement");
-      var ax = e.rotationrate.alpha;//accelerationIncludingGravity.x;
-      var ay = e.rotationrate.beta;
-      var az = e.rotationrate.gamma;
+      var ax = e.rotationRate.alpha;//accelerationIncludingGravity.x;
+      var ay = e.rotationRate.beta;
+      var az = e.rotationRate.gamma;
       document.getElementById("accelerationX").innerHTML = ax;
       document.getElementById("accelerationY").innerHTML = ay;
       document.getElementById("accelerationZ").innerHTML = az;
