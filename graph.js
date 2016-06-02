@@ -16,7 +16,7 @@ function plotGraph(id, dIdx, xLabel, yLabel, yTick, options){
 || document.body.clientHeight;
 
     var boxW = parseInt(d3.select('#'+id).style('width'), 10);
-    var boxH = wH/3 - 50;
+    var boxH = (wH-100)/3;
 
     var margin = {top: 20, right: 50, bottom: 55, left: 50},
         width = boxW - margin.left - margin.right,
@@ -141,17 +141,19 @@ function plotGraph(id, dIdx, xLabel, yLabel, yTick, options){
       
     
 
-    self.replot = function(line){
+    self.replot = function(line, len, zero){
       var timeFormat = d3.time.format("%M:%S")
       self.xAxis.tickFormat(function(n){
-        n = n - line.data[0][0];
+        n = n - zero;
         return timeFormat(new Date(n))
         });
+      var data = line.data;
       
+      var endTime = line.data[line.data.length-1][0];
       
-      self.x.domain([line.data[0][0], line.data[line.data.length-1][0]])
+        self.x.domain([line.data[0][0], endTime])
+        self.y.domain(d3.extent(line.data, function(l){return l[dIdx]}))
       
-      self.y.domain(d3.extent(line.data, function(l){return l[dIdx]}))
       self.updateAxes();
       
       svg.selectAll("path").remove();

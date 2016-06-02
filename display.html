@@ -56,7 +56,8 @@
 
 
 Monitor Device ID: <input id="device" type="number" min="0" />
-<button id="start">Start</button>
+<button id="start">Start</button><br />
+Display Length: <input id="length" type="number" min="0" value="60" /> seconds
 <br />
 Websockets status: <span id="webstat">Not connected</span>
 
@@ -74,7 +75,6 @@ disp.onopen = function (event) {
 };
 disp.onmessage = function (event) {
   
-  console.log(connection, event.data);
   if(connection ==0 && event.data == "Ready to send"){
     $("#webstat").text("Ready");
     connection = 1;
@@ -86,12 +86,32 @@ disp.onmessage = function (event) {
   else if(connection == 2){
     var d = JSON.parse(event.data);
     dataIdx += d.length;
+    console.log(d.length);
     collected = collected.concat(d);
     $("#d").text(collected[0][0] + " " + collected[0][1]);
     
+    var len = parseInt($("#length").val())
     var l = genLine(collected);
-    console.log(l);
-    xPlot.replot(l);
+    
+    var endTime = l.data[l.data.length-1][0];
+    var data = l.data;
+    if(len > 0){
+      var startTime = endTime - len*1000;
+
+      var i=0;
+      for(i = data.length-1; i>=0 && data[i][0] > startTime ;i-- )
+      {
+      }
+      
+      if (i > 0)
+          l.data = data.slice(i);
+    }
+    
+    
+    var firstReading = collected[0][0];
+    xPlot.replot(l, len, firstReading);
+    yPlot.replot(l, len, firstReading);
+    zPlot.replot(l, len, firstReading);
   }
 };
   
@@ -103,11 +123,13 @@ $("#start").click(function(){
     
     
   
-  }, 1000);
+  }, 500);
 
 });
 
-xPlot = new plotGraph("graphBoxX", 1, "X", "mss", function(a){return a});  
+xPlot = new plotGraph("graphBoxX", 1, "X", "m/s/s", function(a){return Math.round(a*1000)/1000});  
+yPlot = new plotGraph("graphBoxX", 2, "Y", "m/s/s", function(a){return Math.round(a*1000)/1000});
+zPlot = new plotGraph("graphBoxX", 3, "Z", "m/s/s", function(a){return Math.round(a*1000)/1000});  
   
 </script>
 </body>
