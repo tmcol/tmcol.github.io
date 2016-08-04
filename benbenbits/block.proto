@@ -1,0 +1,24 @@
+message Transaction {
+  required bytes sender = 1;
+  required bytes recver = 2;
+  required uint64 amount = 3;
+  required bytes signature = 4;
+
+}
+
+message BlockContents {
+  repeated Transaction txns = 1;
+  required uint32 time = 2;
+  required bytes prevHash = 3;
+  required uint64 nextDiff = 4;
+  required uint32 num = 5;
+  required uint64 thisDiff = 6;
+}
+
+message Block {
+  required BlockContents cnts = 1;
+  required bytes signature = 2;
+  required bytes hash = 3;
+  required uint64 nonce = 4;
+  required bytes pubkey = 5;
+}
